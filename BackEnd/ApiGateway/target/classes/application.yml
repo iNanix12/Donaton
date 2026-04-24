@@ -1,0 +1,121 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      # ── CORS Global ────────────────────────────────────────────────────
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:3000"   # React/Vue dev server
+              - "http://localhost:5173"   # Vite dev server
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+
+      # ── Rutas hacia los Microservicios ────────────────────────────────
+      routes:
+
+        # ── Microservicio de Donaciones (puerto 8086) ──────────────────
+        - id: donacion-service
+          uri: http://localhost:8086
+          predicates:
+            - Path=/api/donaciones/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: donacionCircuitBreaker
+                fallbackUri: forward:/fallback/donaciones
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY, SERVICE_UNAVAILABLE
+                methods: GET
+            - AddRequestHeader=X-Gateway-Source, donaton-gateway
+            - AddRequestHeader=X-Service-Name, donacion-service
+
+        # ── Microservicio de Logística (puerto 8087) ───────────────────
+        - id: logistica-service
+          uri: http://localhost:8087
+          predicates:
+            - Path=/api/logistica/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: logisticaCircuitBreaker
+                fallbackUri: forward:/fallback/logistica
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY, SERVICE_UNAVAILABLE
+                methods: GET
+            - AddRequestHeader=X-Gateway-Source, donaton-gateway
+            - AddRequestHeader=X-Service-Name, logistica-service
+
+        # ── Microservicio de Necesidades en Terreno (puerto 8088) ─────
+        - id: necesidades-service
+          uri: http://localhost:8088
+          predicates:
+            - Path=/api/necesidades/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: necesidadesCircuitBreaker
+                fallbackUri: forward:/fallback/necesidades
+            - AddRequestHeader=X-Gateway-Source, donaton-gateway
+            - AddRequestHeader=X-Service-Name, necesidades-service
+
+# ── Resilience4j - Circuit Breaker ────────────────────────────────────
+resilience4j:
+  circuitbreaker:
+    instances:
+      donacionCircuitBreaker:
+        # Abre el circuito cuando el 50% de las llamadas en una ventana
+        # de 10 intentos falla
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        # Tiempo en estado OPEN antes de pasar a HALF_OPEN (10 segundos)
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        registerHealthIndicator: true
+      logisticaCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        registerHealthIndicator: true
+      necesidadesCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        registerHealthIndicator: true
+
+# ── Actuator ───────────────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, gateway, circuitbreakers
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+
+# ── Logging ────────────────────────────────────────────────────────────
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    com.donaton.gateway: DEBUG
+    io.github.resilience4j: INFO
