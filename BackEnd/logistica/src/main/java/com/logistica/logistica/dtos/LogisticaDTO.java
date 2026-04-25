@@ -13,7 +13,9 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -113,8 +115,10 @@ public class LogisticaDTO {
 
     //-------------------- Response DTOs --------------------
 
-    @Getter
+    @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class CentroAcopioResponse {
 
         private Long id;
@@ -130,8 +134,10 @@ public class LogisticaDTO {
 
     }
 
-    @Getter
+    @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class InventarioResponse {
 
         private Long id;
@@ -142,8 +148,10 @@ public class LogisticaDTO {
 
     }
 
-    @Getter
+    @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class EnvioResponse {
 
         private Long id;
