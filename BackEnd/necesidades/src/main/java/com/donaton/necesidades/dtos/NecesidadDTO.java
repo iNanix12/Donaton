@@ -14,7 +14,9 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -112,7 +114,7 @@ public class NecesidadDTO {
         private Long reporteNecesidadId;
 
         //Id del envío en el microservicio de Logistica (opcional al crear)
-        private Long envioLogistica;
+        private Long envioIdLogistica;
         private String numeroSeguimientoEnvio;
 
         @NotNull(message = "La cantidad asignada es obligatoria")
@@ -128,7 +130,7 @@ public class NecesidadDTO {
         private String asignadoPor;
 
         @Size(max = 500)
-        private String obersvaciones;
+        private String observaciones;
 
     }
 
@@ -147,7 +149,10 @@ public class NecesidadDTO {
 
     //----------------------------------ResponseDTOs---------------------------------------
 
-     @Getter @Builder
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class ZonaAfectadaResponse {
         private Long id;
         private String nombre;
@@ -169,7 +174,10 @@ public class NecesidadDTO {
         private long reportesAtendidos;
     }
  
-    @Getter @Builder
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class ReporteNecesidadResponse {
         private Long id;
         private Long zonaAfectadaId;
@@ -191,7 +199,10 @@ public class NecesidadDTO {
         private List<AsignacionRecursoResponse> asignaciones;
     }
  
-    @Getter @Builder
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class AsignacionRecursoResponse {
         private Long id;
         private Long reporteNecesidadId;
@@ -210,7 +221,10 @@ public class NecesidadDTO {
     
      //DTO de resumen estadístico para el panel del administrador.
      
-    @Getter @Builder
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class ResumenGeneralResponse {
         private long totalZonasActivas;
         private long totalReportesPendientes;
